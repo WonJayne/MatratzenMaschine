@@ -25,10 +25,10 @@
 // the machine will only care about zylinders in pos 0 and 1, as they differ from 0
 // All Zeros are neclected.
 //
-// changelog: 
+// changelog:
 // 1) introduced f_valve_activation_timer() to allow for longer times
 // when firing the valves, f_short_delay might be too short
-// 2) changed f_change_zylinder_state from bool to void, as there is no return value
+// 2) changed f_change_cylinder_state from bool to void, as there is no return value
 
 
 // ########### Global I/O Mapping Def ###################:
@@ -71,7 +71,7 @@ int isZ11Pos = CONTROLLINO_A10;
 // if wiring is messed up, one can permutate the sequence the zylinders here
 // last one is actually two zylinders that are set by same valve but checked by two set of sensors
 int isZylStateMap[] = {
-  isZ01Pos, isZ02Pos, isZ03Pos, isZ04Pos, isZ05Pos, isZ06Pos, isZ07Pos, isZ08Pos, isZ09Pos, isZ10Pos, isZ11Pos          
+  isZ01Pos, isZ02Pos, isZ03Pos, isZ04Pos, isZ05Pos, isZ06Pos, isZ07Pos, isZ08Pos, isZ09Pos, isZ10Pos, isZ11Pos
   };
 
 byte doZylShortMap[] = {
@@ -99,10 +99,12 @@ const byte resetInterruptPin = CONTROLLINO_IN0;
 // button push is stored in global flag which has to be volatile!
 volatile bool resetFlag = true;
 volatile bool stopFlag = false;
-const byte mapDebugRelais = CONTROLLINO_R1;
+const byte mapDebugRelay = CONTROLLINO_R1;
 const int numZylinders = sizeof(isZylStateMap) / sizeof(isZylStateMap[0]);
 // flag for end of line:
 const byte mapEndOfLine = CONTROLLINO_A14;
+// Number of times to read the sensor repetitively
+const int NUM_SENSOR_READINGS = 5;
 
 
 void setup ()
@@ -127,7 +129,7 @@ void setup ()
   pinMode(mapStartLight, OUTPUT);
   pinMode(mapStopLight, OUTPUT);
   pinMode(mapResetLight, OUTPUT);
-  pinMode(mapDebugRelais, OUTPUT);
+  pinMode(mapDebugRelay, OUTPUT);
   Serial.begin(9600);
   f_wait_for_nc_start();
 }
@@ -139,105 +141,105 @@ void setup ()
 const int doStateArray[][numZylinders] = {
   // Zylinder ID:
 // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {-1, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00,  1, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00,  1, 00, 00, 00, 00},
-  {00, 00, 00, 00, -1, -1, 00, 00, 00, 00, 00},
-  {00, -1, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00,  1, 00, 00, 00, 00, 00, 00, 00},
-  { 1, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00,  1, 00, 00, 00},
-  {00, 00, 00, 00,  1,  1, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, -1, -1, 00, 00, 00},
-  {00, 00, 00, -1, 00, 00, 00, 00, 00, -1, -1},
-  {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, -1, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00, 00, 00, 00,  1},
-  {00, 00, 00, 00, 00, 00, 00, 00, -1,  1, 00},
-  {00, 00,  1, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00, 00,  1, 00, 00},
+  {-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0},
+  { 0,  0,  0,  0, -1, -1,  0,  0,  0,  0,  0},
+  { 0, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0},
+  { 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0},
+  { 0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0, -1, -1,  0,  0,  0},
+  { 0,  0,  0, -1,  0,  0,  0,  0,  0, -1, -1},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0, -1,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1},
+  { 0,  0,  0,  0,  0,  0,  0,  0, -1,  1,  0},
+  { 0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0},
 };
 
 const int doTestArray[][numZylinders] = {
 // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {00, -1, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00,  1, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, -1, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {-1, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  { 1, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {-1, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, -1, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00,  1, 00, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00,  1, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00, -1, 00, 00, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00,  1,  1, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00, -1, -1, 00, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00,  1, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, -1, 00, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00,  1, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00, -1, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00,  1, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00, -1, 00, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00},
-  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00},
-  {00, 00, 00, 00, 00, 00, 00, 00,  1, 00, 00},
-  {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, -1},
-  {00, 00, 00, 00, 00, 00, 00, 00, 00, 00,  1},
-  {00, 00, 00, 00, 00, 00, 00, 00, -1, 00, 00},
+  { 0, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  {-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  {-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0, -1,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0, -1, -1,  0,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0, -1,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0, -1,  0,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1},
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1},
+  { 0,  0,  0,  0,  0,  0,  0,  0, -1,  0,  0},
 };
-// {{00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00},
-//  {00, 00, 00, 00, 00, 00, -1, -1, 00, 00,  1}, // row00
-//  { 1, 00, 00, -1,  1,  1, 00, 00, -1,  1, 00}, // row01
-//  {00, 00,  1, 00, 00, 00, 00, 00, 00, 00, 00}, // row02
-//  {00, 00,  1, 00, 00, 00, 00, 00,  1, 00, 00}, //
+// {{ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+//  { 0,  0,  0,  0,  0,  0, -1, -1,  0,  0,  1}, // row00
+//  { 1,  0,  0, -1,  1,  1,  0,  0, -1,  1,  0}, // row01
+//  { 0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0}, // row02
+//  { 0,  0,  1,  0,  0,  0,  0,  0,  1,  0,  0}, //
 // };
 //{
 //  // test ende
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1,  1}, // row00
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, -1}, // row01
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, -1}, // row02
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1,  1}, // row03
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row04
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row04
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row05
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row06
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row07
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row08
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row09
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row10
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row11
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row12
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row13
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row14
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row15
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row16
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row17
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row18
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00,  1, 00}, // row19
-//  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row20
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1}, // row00
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1}, // row01
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1, -1}, // row02
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  1}, // row03
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row04
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row04
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row05
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row06
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row07
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row08
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row09
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row10
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row11
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row12
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row13
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row14
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row15
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row16
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row17
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row18
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0}, // row19
+//  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row20
 //};
 
 const int toSafeStateArray[][numZylinders] = {
   // Zylinder ID:
 // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {00, -1, 00, 00, 00, 00, -1, -1, 00, 00,  1}, // row00
-  { 1, 00, 00, 00, -1, -1, 00, 00, -1,  1, 00}, // row01
-  {00, 00,  1, -1,  1,  1, 00, 00, 00, 00, 00}, // row02
-  {00, 00,  1, 00, 00, 00, 00, 00,  1, 00, 00}
+  { 0, -1,  0,  0,  0,  0, -1, -1,  0,  0,  1}, // row00
+  { 1,  0,  0,  0, -1, -1,  0,  0, -1,  1,  0}, // row01
+  { 0,  0,  1, -1,  1,  1,  0,  0,  0,  0,  0}, // row02
+  { 0,  0,  1,  0,  0,  0,  0,  0,  1,  0,  0}
 };
 
 const int toUnlockStateArray[][numZylinders] = {
   // Zylinder ID:
 // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {00, 00, 00, 00, 00, 00, 00, 00, 00, -1, 00}, // row00
-  {00, 00, 00, 00, 00, 00, 00, 00, -1, 00, -1}, // row01
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row00
+  { 0,  0,  0,  0,  0,  0,  0,  0, -1,  0, -1}, // row01
 };
 
 const int toLockStateArray[][numZylinders] = {
   // Zylinder ID:
 // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {00, 00, 00, 00, 00, 00, 00, 00,  1, 00, 00}, // row00
-  {00, 00, 00, 00, 00, 00, 00, 00, 00, 00,  1}, // row01
+  { 0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0}, // row00
+  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1}, // row01
 };
 
 // ############# main loop: #############
@@ -247,9 +249,7 @@ void loop() {
   bool newStateReached;
   bool machineUnlocked;
   bool isEndOfLine;
-  int i;
   int tempArr[numZylinders];
-  byte j;
   Serial.print("Start of Loop");
   Serial.print("\n");
   // if start_up --> we want the user to give us a go.
@@ -290,15 +290,15 @@ void loop() {
     f_display_running_state();
     // check if we are at the end of line:
     isEndOfLine = f_check_if_line_end();
-    
+
     if (not(stopFlag) & not (isEndOfLine)) {
-      for (i = 0; i < (sizeof(doStateArray) / sizeof(doStateArray[0])); i++) {
+      for (int i = 0; i < (sizeof(doStateArray) / sizeof(doStateArray[0])); i++) {
         if (resetFlag) {
           // reset flag has been raised, interrupt immediately!
           break;
         }
         // copy the temp array slice to make sure that it has the right dimension
-        for (j = 0; j < numZylinders; j++) {
+        for (int j = 0; j < numZylinders; j++) {
           // Serial.print("Extracting State Vec  ");
           tempArr[j] = doStateArray[i][j];
         }
@@ -306,7 +306,7 @@ void loop() {
         //1 do state
         //2 wait for completion
         //3 break if reset is pressed
-        f_change_zylinder_state(tempArr, sizeof(tempArr), i + 1);
+        f_change_cylinder_state(tempArr, sizeof(tempArr), i + 1);
         Serial.print("State set, wait for completion");
         Serial.print("\n");
         while (not(newStateReached)) {
@@ -348,7 +348,7 @@ void f_unlock_machine() {
     newStateReached = false;
     //1 do state
     //2 wait for completion
-    f_change_zylinder_state(tempArr, sizeof(tempArr), i + 1);
+    f_change_cylinder_state(tempArr, sizeof(tempArr), i + 1);
     while (not(newStateReached)) {
       newStateReached = f_check_defined_state(tempArr, sizeof(tempArr));
       // newStateReached = newStateReached && f_check_defined_state(tempArr, sizeof(tempArr));
@@ -361,22 +361,20 @@ void f_unlock_machine() {
 
 void f_lock_machine() {
   // brings machine from unlock to lock state
-  int i;
-  int j;
   int tempArr[numZylinders];
   bool newStateReached;
-  for (i = 0; i < (sizeof(toLockStateArray) / sizeof(toLockStateArray[0])); i++) {
+  for (int i = 0; i < (sizeof(toLockStateArray) / sizeof(toLockStateArray[0])); i++) {
     Serial.print("Moving machine to Lock State");
     Serial.print("\n");
     // copy temporare array
-    for (j = 0; j < numZylinders; j++) {
+    for (int j = 0; j < numZylinders; j++) {
       tempArr[j] = toLockStateArray[i][j];
     }
     // if (resetFlag){break;}
     newStateReached = false;
     //1 do state
     //2 wait for completion
-    f_change_zylinder_state(tempArr, sizeof(tempArr), i + 1);
+    f_change_cylinder_state(tempArr, sizeof(tempArr), i + 1);
     while (not(newStateReached)) {
       newStateReached = f_check_defined_state(tempArr, sizeof(tempArr));
       if (digitalRead(mapModeChoice) == LOW){break;}
@@ -402,7 +400,7 @@ void f_initialise_machine_starting_pos() {
     newStateReached = false;
     //1 do state
     //2 wait for completion
-    f_change_zylinder_state(tempArr, sizeof(tempArr), i + 1);
+    f_change_cylinder_state(tempArr, sizeof(tempArr), i + 1);
     while (not(newStateReached)) {
       newStateReached = f_check_defined_state(tempArr, sizeof(tempArr));
       // newStateReached = newStateReached && f_check_defined_state(tempArr, sizeof(tempArr));
@@ -433,13 +431,13 @@ void isr_reset()
 }  // end of isr
 
 bool f_check_if_line_end() {
-  bool isEndOfLine = true;
-  // check if circuit of end detector is closed --> HIGH --> not touched yet
-  if (digitalRead(mapEndOfLine)== HIGH){
-    isEndOfLine = false;
-    Serial.print("Beginning with next cycle");
-  }
-  return isEndOfLine;
+    // check if circuit of end detector is closed --> HIGH --> not touched yet
+    if (digitalRead(mapEndOfLine)== HIGH){
+        Serial.print("End of Line not reached");
+        return false;
+    };
+    Serial.print("End of Line");
+    return true;
 } //f_check_if_line_end
 
 //############# Function to Interrupt loop #################
@@ -448,9 +446,9 @@ bool f_check_if_line_end() {
 void f_small_delay() {
   //Serial.print("f_smallDelay");
   // is a helper function to set all smallDelays at one place
-  digitalWrite(mapDebugRelais, HIGH);
+  digitalWrite(mapDebugRelay, HIGH);
   delay(100);
-  digitalWrite(mapDebugRelais, LOW);
+  digitalWrite(mapDebugRelay, LOW);
   delay(10);
 } // small delay
 
@@ -483,7 +481,7 @@ void f_wait_for_nc_start_or_reset() {
   digitalWrite(mapStopLight, HIGH);
   digitalWrite(mapStartLight, LOW);
   while (digitalRead(mapNcStart) == LOW && not(resetFlag)) {
-    digitalWrite(mapDebugRelais, HIGH);
+    digitalWrite(mapDebugRelay, HIGH);
     delay(10);
     i++;
     // after 50 steps illuminate start button to wait for user to press
@@ -496,7 +494,7 @@ void f_wait_for_nc_start_or_reset() {
       // reset counter to prevent overflow.
       i = 0;
     };
-    digitalWrite(mapDebugRelais, LOW);
+    digitalWrite(mapDebugRelay, LOW);
   }
 } // f_wait_for_nc_start_or_reset()
 
@@ -507,7 +505,7 @@ void f_wait_for_nc_start() {
   // illuminate stop light
   digitalWrite(mapStartLight, LOW);
   while (digitalRead(mapNcStart) == LOW) {
-    digitalWrite(mapDebugRelais, HIGH);
+    digitalWrite(mapDebugRelay, HIGH);
     delay(10);
     i++;
     // after 50 steps illuminate start button to wait for user to press
@@ -520,20 +518,19 @@ void f_wait_for_nc_start() {
       // reset counter to prevent overflow.
       i = 0;
     };
-    digitalWrite(mapDebugRelais, LOW);
+    digitalWrite(mapDebugRelay, LOW);
   }
 } // f_wait_for_nc_start()
 
 
-//############# Function to Interact with Zylinders #################
+//############# Function to Interact with Cylinders #################
 
-void f_change_zylinder_state(int doState[], int doStateSize, int currStep) {
-  int i;
+void f_change_cylinder_state(int doState[], int doStateSize, int currStep) {
   Serial.print("current step ");
   Serial.print(currStep);
   Serial.print("\n");
-  // give command to extract zylinder --> fire valves
-  for (i = 0; i < (doStateSize / sizeof(doState[0])); i++) {
+  // give command to extract cylinder --> fire valves
+  for (int i = 0; i < (doStateSize / sizeof(doState[0])); i++) {
     if (doState[i] == 1) {
       digitalWrite(doZylLongMap[i], HIGH);
     };
@@ -543,7 +540,7 @@ void f_change_zylinder_state(int doState[], int doStateSize, int currStep) {
   }
   f_valve_activation_timer();
   // take command back --> to prevent from overheating
-  for (i = 0; i < (doStateSize / sizeof(doState[0])); i++) {
+  for (int i = 0; i < (doStateSize / sizeof(doState[0])); i++) {
     //Serial.print(doState[i]);
     //Serial.print("\n");
     if (doState[i] == 1) {
@@ -556,70 +553,50 @@ void f_change_zylinder_state(int doState[], int doStateSize, int currStep) {
 }
 
 
-
-
-bool f_check_defined_state(int doState[], int doStateSize) {
+bool f_check_defined_state(const int doState[], const int doStateSize) {
   // copy the arrays first, call by value
-  int arr1[numZylinders];
-  int arr2[numZylinders];
-  byte i;
-  bool cond = false;
-  for (i = 0; i < numZylinders; i++)
-  {
-    //Serial.print("Copying States  ");
-    //Serial.print(doState[i]);
-    //Serial.print(i);
-    arr1[i] = 0;
-    arr2[i] = 0;
-    //Serial.print("\n");
-  }
-  // now take each signal twice, with a short break in between
-  // first selective iteration
-  for (i = 0; i < (doStateSize / sizeof(doState[0])); i++) {
-    //if (doState[i] != 0) {
-    //Serial.print("Reading States, Zylinder ");
-    //Serial.print(i);
-    //Serial.print("State ");
-    //Serial.print(doState[i]);
-    //Serial.print("\n");
-    arr1[i] = analogRead(isZylStateMap[i]);
-    //Serial.print(arr1[i]);
-    //Serial.print("\n");
-    //}
-  }
-  // small delay before second signal recording
-  f_small_delay();
-  // second selective iteration
-  for (i = 0; i < (doStateSize / sizeof(doState[0])); i++) {
-    //if (doState[i] != 0) {
-    arr2[i] = analogRead(isZylStateMap[i]);
-    //Serial.print(arr2[i] );
-    //Serial.print("\n");
-    //}
-  }
-  // are all measurements identical (did the zylinder state not change?)
-  cond = f_check_delta_within_range(arr1, arr2, sizeof(arr2));
-  if (cond) {
-    // the measurements were the same, but are the zylinder already in the do state?
-    cond = f_compare_do_and_is(doState, arr2, sizeof(arr2));
-  };
-  return cond;
+  int readings[numZylinders][NUM_SENSOR_READINGS]; // Array to store all readings
+    bool cond = true;
+
+    // Take NUM_SENSOR_READINGS for each sensor
+    for (int j = 0; j < NUM_SENSOR_READINGS; j++) {
+        for (int i = 0; i < numZylinders; i++) {
+            readings[i][j] = analogRead(isZylStateMap[i]);
+        }
+        if (j < NUM_SENSOR_READINGS - 1){
+            f_small_delay(); // Delay between each set of readings
+        }
+    }
+
+    for (int i = 0; i < numZylinders; i++) {
+        if (!f_check_delta_within_range(readings[i], NUM_SENSOR_READINGS)) {
+            return false; // If any sensor reading is out of range, set condition to false and return
+        }
+    }
+
+    // If all sensor readings are within range, proceed to compare with desired states
+    float averagedReadings[numZylinders];
+    for (int i = 0; i < numZylinders; i++) {
+        int sum = 0;
+        for (int j = 0; j < NUM_SENSOR_READINGS; j++) {
+            sum += readings[i][j];
+        }
+        // cast to float to avoid integer division
+        averagedReadings[i] = (float)sum / (float)NUM_SENSOR_READINGS;
+    }
+    return f_compare_do_and_is(doState, averagedReadings, doStateSize);
 }
 
-bool f_check_delta_within_range(int A1[], int A2[], int A2size) {
-  // calculates the pairwise delta and checks if its in range
-  // if any delta is not in range, return false
-  // otherwise return true
-  int i;
-  int k;
-  for (i = 0; i < numZylinders; i++) {
-    k = A1[i] - A2[i];
-    if (abs(k) > 10) {
-      return false;
+bool f_check_delta_within_range(const int readings[], const int numReadings) {
+    int minReading = readings[0];
+    int maxReading = readings[0];
+
+    for (int i = 1; i < numReadings; i++) {
+        if (readings[i] < minReading) minReading = readings[i];
+        if (readings[i] > maxReading) maxReading = readings[i];
     }
-  }
-  // Serial.print("\nCheckComplete\n");
-  return true;
+    // Check if the difference between min and max is within a threshold, e.g., less than 5
+    return (maxReading - minReading) < 5;
 }
 
 const int allowedHighRange[][numZylinders] = {
@@ -636,53 +613,47 @@ const int allowedLowRange[][numZylinders] = {
   {721, 720, 705, 720, 718, 718, 720, 720, 720, 720, 720}, // row01
 };
 
-bool f_compare_do_and_is(int doState[], int isState[], int doStateSize) {
+bool f_compare_do_and_is(int doState[], float averageIsState[], int doStateSize) {
   // compares the states, if not in specified range break immediately by return false
   // if run is complete, return true
-  bool cond = true;
-  byte i;
-  for (i = 0; i < numZylinders; i++) {
-    //Serial.print(isState[i]);
-    //Serial.print("\n");
-    //Serial.print(isState[i]);
-    //Serial.print("\n");
+  for (int i = 0; i < numZylinders; i++) {
+    Serial.print(isState[i]);
+    Serial.print("\n");
+    Serial.print(isState[i]);
+    Serial.print("\n");
     if (doState[i] == 1) {
       if (not(isState[i] > allowedHighRange[0][i] && isState[i] < allowedHighRange[1][i])) {
-        cond = false;
-        /*Serial.print(i);
+        Serial.print(i);
         Serial.print(" at ");
         Serial.print(1);
         Serial.print(" with value ");
         Serial.print(isState[i]);
         Serial.print(" is not yet where it should be \n");
-        */
+        return false;
       }
     }
     if (doState[i] == -1) {
       if (not(isState[i] > allowedLowRange[0][i] && isState[i] < allowedLowRange[1][i])) {
         cond = false;
-        /*
         Serial.print(i);
         Serial.print(" at ");
         Serial.print(-1);
         Serial.print(" with value ");
         Serial.print(isState[i]);
         Serial.print(" is not yet where it should be \n");
-        */
+        return false;
       }
     }
   }
-  if (cond == true) {
-      for (i = 0; i < numZylinders; i++) {
-        Serial.print(i);
-        Serial.print(" at ");
-        Serial.print(isState[i]);
-        Serial.print(" ");
-      }
-     Serial.print(" Everything is fine, every zylinder is where it should be \n");
+
+  for (int i = 0; i < numZylinders; i++) {
+    Serial.print(i);
+    Serial.print(" at ");
+    Serial.print(isState[i]);
+    Serial.print(" ");
+    Serial.print(" Everything is fine, every cylinder is where it should be \n");
   }
-  
-  return cond;
+  return true;
 }
 
 //############# Functions for Illumination: #############
