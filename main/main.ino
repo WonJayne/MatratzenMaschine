@@ -38,25 +38,25 @@
 // ########### Global I/O Mapping Def ###################:
 // all cylinder Outputs
 byte doZ01short = CONTROLLINO_D0;
-byte doZ01long  = CONTROLLINO_D1;
+byte doZ01long = CONTROLLINO_D1;
 byte doZ02short = CONTROLLINO_D2;
-byte doZ02long  = CONTROLLINO_D3;
+byte doZ02long = CONTROLLINO_D3;
 byte doZ03short = CONTROLLINO_D4;
-byte doZ03long  = CONTROLLINO_D5;
+byte doZ03long = CONTROLLINO_D5;
 byte doZ04short = CONTROLLINO_D6;
-byte doZ04long  = CONTROLLINO_D7;
+byte doZ04long = CONTROLLINO_D7;
 byte doZ05short = CONTROLLINO_D8;
-byte doZ05long  = CONTROLLINO_D9;
+byte doZ05long = CONTROLLINO_D9;
 byte doZ06short = CONTROLLINO_D10;
-byte doZ06long  = CONTROLLINO_D11;
+byte doZ06long = CONTROLLINO_D11;
 byte doZ07short = CONTROLLINO_D12;
-byte doZ07long  = CONTROLLINO_D13;
+byte doZ07long = CONTROLLINO_D13;
 byte doZ08short = CONTROLLINO_D14;
-byte doZ08long  = CONTROLLINO_D15;
+byte doZ08long = CONTROLLINO_D15;
 byte doZ09short = CONTROLLINO_D16;
-byte doZ09long  = CONTROLLINO_D17;
+byte doZ09long = CONTROLLINO_D17;
 byte doZ10short = CONTROLLINO_D18;
-byte doZ10long  = CONTROLLINO_D19;
+byte doZ10long = CONTROLLINO_D19;
 
 // all cylinder inputs/positions --> constants
 int isZ01Pos = CONTROLLINO_A0;
@@ -76,15 +76,15 @@ int isZ11Pos = CONTROLLINO_A10;
 // last one is actually two cylinders that are set by same valve but checked by two set of sensors
 int isZylStateMap[] = {
   isZ01Pos, isZ02Pos, isZ03Pos, isZ04Pos, isZ05Pos, isZ06Pos, isZ07Pos, isZ08Pos, isZ09Pos, isZ10Pos, isZ11Pos
-  };
+};
 
 // define all outputs which are given by the user via control (note that doZ05short is duplicated on purpose):
 byte doZylShortMap[] = {
   doZ01short, doZ02short, doZ03short, doZ04short, doZ05short, doZ05short, doZ06short, doZ07short, doZ08short, doZ09short, doZ10short
-  };
+};
 
 // define all outputs which are given by the user via control (note that doZ05long is duplicated on purpose):
-byte  doZylLongMap[] = {
+byte doZylLongMap[] = {
   doZ01long, doZ02long, doZ03long, doZ04long, doZ05long, doZ05long, doZ06long, doZ07long, doZ08long, doZ09long, doZ10long
 };
 
@@ -95,7 +95,7 @@ const byte mapDoCycle = CONTROLLINO_I18;
 const byte mapModeChoice = CONTROLLINO_A15;
 // define outputs which are displayed to the user via control panel:
 const byte mapStartLight = CONTROLLINO_D23;
-const byte mapStopLight  = CONTROLLINO_D22;
+const byte mapStopLight = CONTROLLINO_D22;
 const byte mapResetLight = CONTROLLINO_D21;
 // last are the buttons, they are interrupts as we have to remember any push
 // parallel switch and sensor to detect end of cycle iteration
@@ -118,51 +118,52 @@ const int NUM_SENSOR_READINGS = 5;
 
 const int doStateArray[][numCylinders] = {
   // Cylinder ID:
-// 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {-1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-  { 0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-  { 0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0},
-  { 0,  0,  0,  0, -1, -1,  0,  0,  0,  0,  0},
-  { 0, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-  { 0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0},
-  { 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-  { 0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0},
-  { 0,  0,  0,  0,  1,  1,  0,  0,  0,  0,  0},
-  { 0,  0,  0,  0,  0,  0, -1, -1,  0,  0,  0},
-  { 0,  0,  0, -1,  0,  0,  0,  0,  0, -1, -1},
-  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-  { 0,  0, -1,  0,  0,  0,  0,  0,  0,  0,  0},
-  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1},
-  { 0,  0,  0,  0,  0,  0,  0,  0, -1,  1,  0},
-  { 0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0},
-  { 0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0},
+  // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
+  { -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0 },
+  { 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
+  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 },
+  { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0 },
+  { 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, -1 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0 },
+  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 },
 };
 
 const int toSafeStateArray[][numCylinders] = {
   // Cylinder ID:
-// 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  { 0, -1,  0,  0,  0,  0, -1, -1,  0,  0,  1}, // row00
-  { 1,  0,  0,  0, -1, -1,  0,  0, -1,  1,  0}, // row01
-  { 0,  0,  1, -1,  1,  1,  0,  0,  0,  0,  0}, // row02
-  { 0,  0,  1,  0,  0,  0,  0,  0,  1,  0,  0}
+  // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
+  { 0, -1, 0, 0, 0, 0, -1, -1, 0, 0, 1 },  // row00
+  { 1, 0, 0, 0, -1, -1, 0, 0, -1, 1, 0 },  // row01
+  { 0, 0, 1, -1, 1, 1, 0, 0, 0, 0, 0 },    // row02
+  { 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0 }
 };
 
 const int toUnlockStateArray[][numCylinders] = {
   // Cylinder ID:
-// 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  { 0,  0,  0,  0,  0,  0,  0,  0,  0, -1,  0}, // row00
-  { 0,  0,  0,  0,  0,  0,  0,  0, -1,  0, -1}, // row01
+  // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0 },   // row00
+  { 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1 },  // row01
 };
 
 const int toLockStateArray[][numCylinders] = {
   // Cylinder ID:
-// 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  { 0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0}, // row00
-  { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1}, // row01
+  // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
+  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 },  // row00
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },  // row01
 };
 
 // ############# Actual Code: #############
 // Only include the following code if debugging is enabled
+#ifdef DEBUG_ENABLED
 void debugPrint(const String& message) {
   Serial.println(message);
 }
@@ -172,10 +173,10 @@ void debugPrint(int value) {
 }
 
 void debugPrint(double value) {
-  Serial.println(value, 6); // Adjust precision as needed
+  Serial.println(value, 6);  // Adjust precision as needed
 }
 // Add more overloads for other data types as necessary
-#else // DEBUG_ENABLED not defined --> create empty implementations
+#else  // DEBUG_ENABLED not defined --> create empty implementations
 void debugPrint(const String& message) {}
 void debugPrint(int value) {}
 void debugPrint(double value) {}
@@ -183,27 +184,26 @@ void debugPrint(double value) {}
 #endif
 
 // ############# Functions to interact with Machine: #############
-void setup ()
-{
+void setup() {
   // initialise all used digital output pins as outputs
   // first, start with serial port:
   // define volatile flags for interrupts:
-    resetFlag = true; // reset flag is set to true, as we want to start in reset state --> machine moves to safe state
-    stopFlag = false;
-  #ifdef DEBUG_ENABLED
-    Serial.begin(9600);
-    // Wait for serial port to connect. Needed for native USB
-    while (!Serial) {}
-  #endif
+  resetFlag = true;  // reset flag is set to true, as we want to start in reset state --> machine moves to safe state
+  stopFlag = false;
+#ifdef DEBUG_ENABLED
+  Serial.begin(9600);
+  // Wait for serial port to connect. Needed for native USB
+  while (!Serial) {}
+#endif
   // next, continue with interrupts:
-  attachInterrupt (digitalPinToInterrupt (resetInterruptPin), isr_reset, CHANGE);  // attach interrupt handler --> detects if circuit is opened
-  attachInterrupt (digitalPinToInterrupt (stopInterruptPin), isr_stop_at_end_of_cycle, CHANGE); // attach interrupt handler --> detects if circuit is opened
+  attachInterrupt(digitalPinToInterrupt(resetInterruptPin), isr_reset, CHANGE);                // attach interrupt handler --> detects if circuit is opened
+  attachInterrupt(digitalPinToInterrupt(stopInterruptPin), isr_stop_at_end_of_cycle, CHANGE);  // attach interrupt handler --> detects if circuit is opened
   // initialise all inputs from user control panel:
   pinMode(mapNcStart, INPUT);
   // pinMode(mapStopAtCycleEnd, INPUT);
   pinMode(mapDoCycle, INPUT);
   pinMode(mapModeChoice, INPUT);
-  pinMode(mapEndOfLine,INPUT);
+  pinMode(mapEndOfLine, INPUT);
   // initialise all cylinder in& outputs:
   for (int i = 0; i < numCylinders; i++) {
     pinMode(isZylStateMap[i], INPUT);
@@ -216,6 +216,8 @@ void setup ()
   pinMode(mapResetLight, OUTPUT);
   pinMode(mapDebugRelay, OUTPUT);
 
+  // brief test if all lights work
+  f_test_all_lights();
   // actual machine start up:
   f_wait_for_nc_start();
 }
@@ -267,7 +269,7 @@ void loop() {
     // check if we are at the end of line:
     isEndOfLine = f_check_if_line_end();
 
-    if (not(stopFlag) & not (isEndOfLine)) {
+    if (not(stopFlag) & not(isEndOfLine)) {
       for (int i = 0; i < (sizeof(doStateArray) / sizeof(doStateArray[0])); i++) {
         if (resetFlag) {
           // reset flag has been raised, interrupt immediately!
@@ -286,14 +288,13 @@ void loop() {
         debugPrint("State set, wait for completion");
         while (not(newStateReached)) {
           newStateReached = f_check_defined_state(tempArr, sizeof(tempArr));
-          // newStateReached = newStateReached && f_check_defined_state(tempArr, sizeof(tempArr));
           if (resetFlag) {
             break;
             // reset flag has been raised, interrupt immediately!
           }
         }
         f_break_cycle_on_request();
-        if (resetFlag) { break;} // reset flag has been raised, interrupt immediately!
+        if (resetFlag) { break; }  // reset flag has been raised, interrupt immediately!
       }
     } else {
       // stop flag has been raised, interrupt at end of cycle
@@ -320,7 +321,7 @@ void f_unlock_machine() {
     f_change_cylinder_state(tempArr, sizeof(tempArr), i + 1);
     while (not(newStateReached)) {
       newStateReached = f_check_defined_state(tempArr, sizeof(tempArr));
-      if (resetFlag) {break;}
+      if (resetFlag) { break; }
     }
   }
 }
@@ -342,22 +343,20 @@ void f_lock_machine() {
     f_change_cylinder_state(tempArr, sizeof(tempArr), i + 1);
     while (not(newStateReached)) {
       newStateReached = f_check_defined_state(tempArr, sizeof(tempArr));
-      if (digitalRead(mapModeChoice) == LOW){break;}
+      if (digitalRead(mapModeChoice) == LOW) { break; }
     }
   }
 }
 
 
 void f_initialise_machine_starting_pos() {
-  int i;
-  int j;
   int tempArr[numCylinders];
   bool newStateReached;
   // toSafeStateArray
-  for (i = 0; i < (sizeof(toSafeStateArray)/sizeof(toSafeStateArray[0])); i++) {
+  for (int i = 0; i < (sizeof(toSafeStateArray) / sizeof(toSafeStateArray[0])); i++) {
     debugPrint("Moving machine to Safe State");
     // copy temporary array
-    for (j = 0; j < numCylinders; j++) {
+    for (int j = 0; j < numCylinders; j++) {
       tempArr[j] = toSafeStateArray[i][j];
     }
     newStateReached = false;
@@ -366,7 +365,7 @@ void f_initialise_machine_starting_pos() {
     f_change_cylinder_state(tempArr, sizeof(tempArr), i + 1);
     while (not(newStateReached)) {
       newStateReached = f_check_defined_state(tempArr, sizeof(tempArr));
-      if (resetFlag) {break;}
+      if (resetFlag) { break; }
     }
   }
 }
@@ -375,55 +374,52 @@ void f_initialise_machine_starting_pos() {
 //############# Function to Interrupt loop #################
 
 // ## A) Interrupt Service Routine (ISR) one for stop and one for reset
-void isr_stop_at_end_of_cycle()
-{
+void isr_stop_at_end_of_cycle() {
   debugPrint("stop flag");
   stopFlag = true;
 }  // end of isr
 
 // Interrupt Service Routine (ISR)
-void isr_reset()
-{
+void isr_reset() {
   debugPrint("reset flag");
   resetFlag = true;
 }  // end of isr
 
 bool f_check_if_line_end() {
-    // check if circuit of end detector is closed --> HIGH --> not touched yet
-    if (digitalRead(mapEndOfLine)== HIGH){
-        debugPrint("End of Line not reached");
-        return false;
-    };
-    debugPrint("End of Line");
-    return true;
-} //f_check_if_line_end
+  // check if circuit of end detector is closed --> HIGH --> not touched yet
+  if (digitalRead(mapEndOfLine) == HIGH) {
+    debugPrint("End of Line not reached");
+    return false;
+  };
+  debugPrint("End of Line");
+  return true;
+}  //f_check_if_line_end
 
 //############# Function to Interrupt loop #################
 
 // ## Ordinary Functions
 void f_small_delay() {
-  //debugPrint("f_smallDelay");
-  // is a helper function to set all smallDelays at one place
-  #ifdef DEBUG_ENABLED
-    digitalWrite(mapDebugRelay, HIGH);
-  #endif
+//debugPrint("f_smallDelay");
+// is a helper function to set all smallDelays at one place
+#ifdef DEBUG_ENABLED
+  digitalWrite(mapDebugRelay, HIGH);
+#endif
   delay(20);
-  #ifdef DEBUG_ENABLED
-    digitalWrite(mapDebugRelay, LOW);
-    delay(20);
-  #endif
-} // small delay
+#ifdef DEBUG_ENABLED
+  digitalWrite(mapDebugRelay, LOW);
+#endif
+}  // small delay
 
 void f_valve_activation_timer() {
   // is a helper function which gives the valves time to react
   debugPrint("f_valve_activation_timer");
   delay(20);
-} // f_valve_activation_timer
+}  // f_valve_activation_timer
 
-void  f_break_cycle_at_end_on_stop_request() {
+void f_break_cycle_at_end_on_stop_request() {
   debugPrint("f_break_cycle_at_end_on_stop_request");
   f_wait_for_nc_start_or_reset();
-} // f_break_cycle_at_end_on_stop_request
+}  // f_break_cycle_at_end_on_stop_request
 
 void f_break_cycle_on_request() {
   debugPrint("f_break_cycle_on_request");
@@ -431,17 +427,16 @@ void f_break_cycle_on_request() {
   if (digitalRead(mapDoCycle) == HIGH) {
     f_wait_for_nc_start_or_reset();
   }
-} // f_break_cycle_on_request
+}  // f_break_cycle_on_request
 
 void f_wait_for_nc_start_or_reset() {
-  int i = 0;
   debugPrint("f_wait_for_nc_start_or_reset");
   // illuminate stop light
   digitalWrite(mapStopLight, HIGH);
   digitalWrite(mapStartLight, LOW);
+  int i = 0;
   while (digitalRead(mapNcStart) == LOW && not(resetFlag)) {
     delay(1);
-    i++;
     // after 500 steps illuminate start button to wait for user to press
     if (i == 499) {
       digitalWrite(mapStartLight, HIGH);
@@ -453,38 +448,38 @@ void f_wait_for_nc_start_or_reset() {
       debugPrint("f_wait_for_nc_start_or_reset, start light off");
       i = 0;
     };
+    i++;
   }
-} // f_wait_for_nc_start_or_reset()
+}  // f_wait_for_nc_start_or_reset()
 
 void f_wait_for_nc_start() {
-  int i = 0;
   debugPrint("f_wait_for_nc_start");
   // illuminate stop light
   digitalWrite(mapStartLight, LOW);
+  int i = 0;
   while (digitalRead(mapNcStart) == LOW) {
     delay(1);
     i++;
-    // after 250 steps illuminate start button to wait for user to press
+    // after 750 steps illuminate start button to wait for user to press
     if (i == 499) {
       digitalWrite(mapStartLight, HIGH);
       debugPrint("f_wait_for_nc_start, start light on");
     };
-    // after 500 steps no longer illuminate start button to wait for user to press
-    if (i >= 499) {
+    // after 1500 steps no longer illuminate start button to wait for user to press
+    if (i >= 1499) {
       digitalWrite(mapStartLight, LOW);
-        debugPrint("f_wait_for_nc_start, start light off");
+      debugPrint("f_wait_for_nc_start, start light off");
       i = 0;
     };
   }
-} // f_wait_for_nc_start()
+}  // f_wait_for_nc_start()
 
 
 //############# Function to Interact with Cylinders #################
 
-void f_change_cylinder_state(int doState[], int doStateSize, int currStep) {
-    // changes the state of the cylinders
-  debugPrint("f_change_cylinder_state");
-  debugPrint(currStep);
+void f_change_cylinder_state(const int doState[], const int doStateSize, const int currStep) {
+  // changes the state of the cylinders
+  debugPrint("f_change_cylinder_state at step " + String(currStep));
   // give command to extract cylinder --> fire valves
   for (int i = 0; i < (doStateSize / sizeof(doState[0])); i++) {
     if (doState[i] == 1) {
@@ -505,106 +500,103 @@ void f_change_cylinder_state(int doState[], int doStateSize, int currStep) {
       digitalWrite(doZylShortMap[i], LOW);
     };
   }
-} // f_change_cylinder_state
+}  // f_change_cylinder_state
 
 
 bool f_check_defined_state(const int doState[], const int doStateSize) {
-    // copy the arrays first, call by value
-    int readings[numCylinders][NUM_SENSOR_READINGS]; // Array to store all readings
+  // copy the arrays first, call by value
+  int readings[numCylinders][NUM_SENSOR_READINGS];  // Array to store all readings
 
-    // Take NUM_SENSOR_READINGS for each sensor
+  // Take NUM_SENSOR_READINGS for each sensor
+  for (int j = 0; j < NUM_SENSOR_READINGS; j++) {
+    for (int i = 0; i < numCylinders; i++) {
+      readings[i][j] = analogRead(isZylStateMap[i]);
+    }
+    if (j < NUM_SENSOR_READINGS - 1) {
+      f_small_delay();  // Delay between each set of readings
+    }
+  }
+
+  for (int i = 0; i < numCylinders; i++) {
+    if (!f_check_delta_within_range(readings[i], NUM_SENSOR_READINGS)) {
+      debugPrint("Stopping this measurement round as " + String(i) + " has a delta that is too high");
+      return false;  // If any sensor reading is out of range, set condition to false and return
+    }
+  }
+
+  // If all sensor readings are within range, proceed to compare with desired states
+  float averagedReadings[numCylinders];
+  for (int i = 0; i < numCylinders; i++) {
+    int sum = 0;
     for (int j = 0; j < NUM_SENSOR_READINGS; j++) {
-        for (int i = 0; i < numCylinders; i++) {
-            readings[i][j] = analogRead(isZylStateMap[i]);
-        }
-        if (j < NUM_SENSOR_READINGS - 1){
-            f_small_delay(); // Delay between each set of readings
-        }
+      sum += readings[i][j];
     }
+    // cast to float to avoid integer division
+    averagedReadings[i] = (float)sum / (float)NUM_SENSOR_READINGS;
+  }
 
-    for (int i = 0; i < numCylinders; i++) {
-        if (!f_check_delta_within_range(readings[i], NUM_SENSOR_READINGS)) {
-            return false; // If any sensor reading is out of range, set condition to false and return
-        }
-    }
+#ifdef DEBUG_ENABLED
+  for (int i = 0; i < numCylinders; i++) {
+    debugPrint("Cylinder " + String(i) + " has avg. reading " + String(averagedReadings[i]));
+  }
+#endif
 
-    // If all sensor readings are within range, proceed to compare with desired states
-    float averagedReadings[numCylinders];
-    for (int i = 0; i < numCylinders; i++) {
-        int sum = 0;
-        for (int j = 0; j < NUM_SENSOR_READINGS; j++) {
-            sum += readings[i][j];
-        }
-        // cast to float to avoid integer division
-        averagedReadings[i] = (float)sum / (float)NUM_SENSOR_READINGS;
-    }
-    return f_compare_do_and_is(doState, averagedReadings, doStateSize);
-} // f_check_defined_state
+  return f_compare_do_and_is(doState, averagedReadings, doStateSize);
+}  // f_check_defined_state
 
 bool f_check_delta_within_range(const int readings[], const int numReadings) {
-    int minReading = readings[0];
-    int maxReading = readings[0];
+  int minReading = readings[0];
+  int maxReading = readings[0];
 
-    for (int i = 1; i < numReadings; i++) {
-        if (readings[i] < minReading) minReading = readings[i];
-        if (readings[i] > maxReading) maxReading = readings[i];
-    }
-    // Check if the difference between min and max is within a threshold, e.g., less than 5
-    return (maxReading - minReading) < 5;
-} // f_check_delta_within_range
+  for (int i = 1; i < numReadings; i++) {
+    if (readings[i] < minReading) minReading = readings[i];
+    if (readings[i] > maxReading) maxReading = readings[i];
+  }
+  // Check if the difference between min and max is within a threshold, e.g., less than 5
+  return (maxReading - minReading) < 5;
+}  // f_check_delta_within_range
 
 const int allowedHighRange[][numCylinders] = {
   // Cylinder ID:
-// 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {798, 797, 780, 798, 778, 780, 796, 795, 795, 795, 795}, // row00
-  {808, 807, 790, 808, 788, 790, 806, 805, 805, 805, 805}, // row01
+  // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
+  { 798, 797, 780, 798, 778, 780, 796, 795, 795, 795, 795 },  // row00
+  { 808, 807, 790, 808, 788, 790, 806, 805, 805, 805, 805 },  // row01
 };
 
 const int allowedLowRange[][numCylinders] = {
   // Cylinder ID:
-// 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
-  {711, 710, 695, 710, 708, 708, 710, 710, 710, 710, 710}, // row00
-  {721, 720, 705, 720, 718, 718, 720, 720, 720, 720, 720}, // row01
+  // 01, 02, 03, 04, 05, 05, 06, 07, 08, 09, 10
+  { 711, 710, 695, 710, 708, 708, 710, 710, 710, 710, 710 },  // row00
+  { 721, 720, 705, 720, 718, 718, 720, 720, 720, 720, 720 },  // row01
 };
 
 bool f_compare_do_and_is(int doState[], float isState[], int doStateSize) {
   // compares the states, if not in specified range break immediately by return false, else return true
   for (int i = 0; i < numCylinders; i++) {
-    debugPrint(isState[i]);
-    debugPrint(isState[i]);
     if (doState[i] == 1) {
       if (not(isState[i] > allowedHighRange[0][i] && isState[i] < allowedHighRange[1][i])) {
-        debugPrint(i);
-        debugPrint(" at ");
-        debugPrint(1);
-        debugPrint(" with value ");
-        debugPrint(isState[i]);
-        debugPrint(" is not yet where it should be ");
+        debugPrint(String(i) + " at 1 with value " + String(isState[i]) + " is not ok");
         return false;
       }
     }
     if (doState[i] == -1) {
       if (not(isState[i] > allowedLowRange[0][i] && isState[i] < allowedLowRange[1][i])) {
-        debugPrint(i);
-        debugPrint(" at ");
-        debugPrint(-1);
-        debugPrint(" with value ");
-        debugPrint(isState[i]);
-        debugPrint(" is not yet where it should be \n");
+        debugPrint(String(i) + " at -1 with value " + String(isState[i]) + " is not ok");
         return false;
       }
     }
+    debugPrint(String(i) + "is at " + String(doState[i]) + " with value " + String(isState[i]) + " (ok)");
   }
-  
-  #ifdef DEBUG_ENABLED
-      for (int i = 0; i < numCylinders; i++) {
-        debugPrint(i);
-        debugPrint(" at ");
-        debugPrint(isState[i]);
-        debugPrint(" ");
-        debugPrint(" Everything is fine, every cylinder is where it should be \n");
-      }
-  #endif
+
+#ifdef DEBUG_ENABLED
+  for (int i = 0; i < numCylinders; i++) {
+    debugPrint(i);
+    debugPrint(" at ");
+    debugPrint(isState[i]);
+    debugPrint(" ");
+    debugPrint(" Everything is fine, every cylinder is where it should be \n");
+  }
+#endif
   return true;
 }
 
@@ -618,4 +610,24 @@ void f_display_running_state() {
   digitalWrite(mapStopLight, LOW);
   digitalWrite(mapStartLight, HIGH);
   digitalWrite(mapResetLight, LOW);
+}
+
+void f_test_all_lights() {
+  debugPrint("starting test on all lights");
+  digitalWrite(mapStopLight, LOW);
+  digitalWrite(mapStartLight, LOW);
+  digitalWrite(mapResetLight, LOW);
+  delay(100);
+  digitalWrite(mapStopLight, HIGH);
+  delay(100);
+  digitalWrite(mapStartLight, HIGH);
+  delay(100);
+  digitalWrite(mapResetLight, HIGH);
+  delay(300);
+  digitalWrite(mapStopLight, LOW);
+  delay(200);
+  digitalWrite(mapStartLight, LOW);
+  delay(100);
+  digitalWrite(mapResetLight, LOW);
+  debugPrint("tested all lights");
 }
