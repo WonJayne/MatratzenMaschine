@@ -4,36 +4,35 @@
 #define DEBUG_ENABLED 1
 
 
-// the setup function runs once when you press reset (CONTROLLINO RST button) or connect the CONTROLLINO to the PC
+/* This sketch is designed to control a machine with multiple cylinders using a Controllino PLC. 
+It incorporates a robust mechanism for reading and adjusting cylinder states and 
+features enhanced debugging capabilities. The setup runs once upon reset or when the Controllino is connected to a PC.
 
-// the cylinders are accessed in an array. there are two functions to interact with all cylinders:
-// 1) obtain_cylinder_state([array])
-//    Input is an array with all indices of the cylinders which are to read
-//    returns an array with one entry per cylinder. The states are
-//      -1: Cylinder is contracted
-//       1: Cylinder is extracted
-//       0: The state of the cylinder is unknown (somewhere in between)
-//    It iterates over the sensor inputs twice within a short period of time,
-//    When both measurements are within the same range, the state is given, otherwise 0 is returned
-// 2) change_cylinder_state([array], [array])
-//    Input is an array encoded with 0, -1, 1:
-//    For each nonzero entry the function will either send a signal to contract or extract the cylinder whose id matches
+Main Features:
+1) Sensor Readings: Each cylinder's position is determined by reading its corresponding sensor multiple times 
+(NUM_SENSOR_READINGS) and calculating the average to mitigate noise and ensure robustness. The state of each cylinder is 
+evaluated based on these averaged readings against predefined thresholds to determine if a cylinder is contracted (-1), 
+extracted (1), or in an unknown state (0).
 
+2) State Changes: Cylinder states can be changed through the `f_change_cylinder_state` function, which takes an array 
+representing the desired state for each cylinder. The function sends signals to contract or extract cylinders accordingly.
 
-// Some Notion:
-// Each Cylinder has two outputs and one input.
-//      Therefore, the state array is 1xn,
-//      and the do array is 2xn
-// Example with three cylinders, set state and then wait for completion:
-// array doStat = {1,-1,0}
-// the machine will only care about cylinders in pos 0 and 1, as they differ from 0
-// All Zeros are neglected.
-//
-// changelog:
-// 1) introduced f_valve_activation_timer() to allow for longer times
-// when firing the valves, f_short_delay might be too short
-// 2) changed f_change_cylinder_state from bool to void, as there is no return value
+3) Debugging: The `DEBUG_ENABLED` directive prints extensive debugging information to the serial monitor. This includes 
+operations being performed, sensor readings, and states of cylinders. Debugging output can be easily enabled or disabled for 
+efficient troubleshooting.
 
+Layout Notation:
+- Each Cylinder has one sensor input and two control outputs.
+- The state array is a 1xN array, where N is the number of cylinders.
+- The control arrays (`doZylShortMap` and `doZylLongMap`) dictate the signals sent to contract or extract a cylinder.
+- A state change operation pays attention to non-zero entries in the state array, ignoring cylinders marked with 0.
+
+Changelog:
+1) Added `f_valve_activation_timer` for adjustable valve activation times, providing flexibility for valve operation durations.
+2) Transitioned `f_change_cylinder_state` from returning a boolean to void since return values were not utilized.
+3) Enhanced sensor reading methodology to improve accuracy and robustness.
+4) Integrated debugging functionalities that can be toggled with the `DEBUG_ENABLED` flag.
+*/
 
 // ########### Global I/O Mapping Def ###################:
 // all cylinder Outputs
@@ -72,8 +71,8 @@ int isZ10Pos = CONTROLLINO_A9;
 int isZ11Pos = CONTROLLINO_A10;
 
 // conclude all information in the arrays:
-// if wiring is messed up, one can permutate the sequence the cylinders here
-// last one is actually two cylinders that are set by same valve but checked by two set of sensors
+// If the wiring is messed up, one can permutate the sequence the cylinders here
+// The fifth one is two cylinders that are set by same valve but checked by two set of sensors
 int isZylStateMap[] = {
   isZ01Pos, isZ02Pos, isZ03Pos, isZ04Pos, isZ05Pos, isZ06Pos, isZ07Pos, isZ08Pos, isZ09Pos, isZ10Pos, isZ11Pos
 };
@@ -88,17 +87,17 @@ byte doZylLongMap[] = {
   doZ01long, doZ02long, doZ03long, doZ04long, doZ05long, doZ05long, doZ06long, doZ07long, doZ08long, doZ09long, doZ10long
 };
 
-// define all inputs which are given by the user via control:
+// define all inputs which the user gives via control:
 const byte mapNcStart = CONTROLLINO_I16;
 // switch set to cycles
 const byte mapDoCycle = CONTROLLINO_I18;
 const byte mapModeChoice = CONTROLLINO_A15;
-// define outputs which are displayed to the user via control panel:
+// define outputs which are displayed to the user via the control panel:
 const byte mapStartLight = CONTROLLINO_D23;
 const byte mapStopLight = CONTROLLINO_D22;
 const byte mapResetLight = CONTROLLINO_D21;
-// last are the buttons, they are interrupts as we have to remember any push
-// parallel switch and sensor to detect end of cycle iteration
+// last are the buttons; they are interrupts as we have to remember any push
+// parallel switch and sensor to detect end-of-cycle iteration
 // const byte mapStopAtCycleEnd = CONTROLLINO_I17;
 const byte stopInterruptPin = CONTROLLINO_IN1;
 const byte resetInterruptPin = CONTROLLINO_IN0;
@@ -114,7 +113,7 @@ const int NUM_SENSOR_READINGS = 5;
 
 // ############# Define all Cylinder states: #############
 
-// Are all Constant, therefore no problem that they are global
+// Are all Constant, it is no problem that they are global
 
 const int doStateArray[][numCylinders] = {
   // Cylinder ID:
