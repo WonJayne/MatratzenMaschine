@@ -613,7 +613,7 @@ const int allowedLowRange[][numZylinders] = {
   {721, 720, 705, 720, 718, 718, 720, 720, 720, 720, 720}, // row01
 };
 
-bool f_compare_do_and_is(int doState[], float averageIsState[], int doStateSize) {
+bool f_compare_do_and_is(int doState[], float isState[], int doStateSize) {
   // compares the states, if not in specified range break immediately by return false
   // if run is complete, return true
   for (int i = 0; i < numZylinders; i++) {
@@ -634,7 +634,6 @@ bool f_compare_do_and_is(int doState[], float averageIsState[], int doStateSize)
     }
     if (doState[i] == -1) {
       if (not(isState[i] > allowedLowRange[0][i] && isState[i] < allowedLowRange[1][i])) {
-        cond = false;
         Serial.print(i);
         Serial.print(" at ");
         Serial.print(-1);
